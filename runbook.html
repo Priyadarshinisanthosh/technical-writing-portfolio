@@ -1,0 +1,280 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Azure Production Recovery Runbook | Priyadarshini Santhosh</title><link rel="stylesheet" href="styles.css"></head><body><header class="topbar"><div class="container nav">
+<a class="brand" href="index.html">PRIYADARSHINI SANTHOSH</a>
+<nav class="links"><a href="index.html#portfolio">Portfolio</a><a href="api-guide.html">API Docs</a><a href="runbook.html">Runbooks</a><a href="index.html#expertise">Expertise</a><a href="articles.html">Articles</a><a href="index.html#about">About</a><a href="index.html#contact">Contact</a></nav>
+</div></header><main class="container doc-layout"><aside class="sidebar"><strong>On this page</strong><a href='#1-purpose'>1. Purpose</a><a href='#2-scope'>2. Scope</a><a href='#3-audience'>3. Audience</a><a href='#4-preconditions-and-safety-controls'>4. Preconditions and safety controls</a><a href='#5-architecture-and-traffic-flow'>5. Architecture and traffic flow</a><a href='#6-initial-triage'>6. Initial triage</a><a href='#7-scenario-http-502-from-application-gateway'>7. Scenario: HTTP 502 from Application Gateway</a><a href='#8-recovery-actions'>8. Recovery actions</a><a href='#9-rollback'>9. Rollback</a><a href='#10-escalation-matrix'>10. Escalation matrix</a><a href='#11-evidence-collection'>11. Evidence collection</a><a href='#12-post-incident-activities'>12. Post-incident activities</a><a href='#13-change-history'>13. Change history</a><a href='#documentation-decisions-demonstrated'>Documentation decisions demonstrated</a><hr><a href="index.html#portfolio">← All samples</a></aside><article class="doc"><h1 id='azure-web-application-production-recovery-runbook'>Azure Web Application Production Recovery Runbook</h1>
+<aside class='callout'><strong>Portfolio Simulation</strong>  </aside>
+<aside class='callout'>This runbook describes a fictional Azure-hosted application. All hostnames, resources, configurations, and procedures are illustrative. The sample demonstrates infrastructure and operational documentation practices without exposing client information.</aside>
+<h2 id='1-purpose'>1. Purpose</h2>
+<p>Provide a repeatable procedure for diagnosing and recovering a web application when users cannot access the service or when the Azure Application Gateway reports an unhealthy backend.</p>
+<h2 id='2-scope'>2. Scope</h2>
+<p>This runbook covers the following simulated path:</p>
+<pre><code class="language-text">Internet
+   |
+   v
+Azure Application Gateway
+   |
+   v
+Azure Load Balancer
+   |
+   v
+Application VM / Web Service
+   |
+   v
+Database</code></pre>
+<p>Covered scenarios include:</p>
+<ul>
+<li>Application unavailable</li>
+<li>HTTP <code>502 Bad Gateway</code></li>
+<li>Unhealthy Application Gateway backend</li>
+<li>Load balancer health-probe failure</li>
+<li>Application service stopped</li>
+<li>Network/security rule blocking expected traffic</li>
+</ul>
+<p>Database recovery is outside the scope of this sample.</p>
+<h2 id='3-audience'>3. Audience</h2>
+<ul>
+<li>IT Operations</li>
+<li>Cloud Operations</li>
+<li>Infrastructure Engineers</li>
+<li>Application Support</li>
+<li>DevOps / SRE</li>
+<li>Incident Managers</li>
+</ul>
+<h2 id='4-preconditions-and-safety-controls'>4. Preconditions and safety controls</h2>
+<p>Before making a production change:</p>
+<ol>
+<li>1. Confirm an incident/change record exists when required by organizational policy.</li>
+<li>2. Confirm you are working in the correct subscription, resource group, and environment.</li>
+<li>3. Capture the current configuration before modifying it.</li>
+<li>4. Use least-privilege access.</li>
+<li>5. Do not expose secrets, connection strings, tokens, or customer data in incident notes.</li>
+<li>6. Prefer reversible changes.</li>
+<li>7. Escalate rather than bypassing a security control to restore service.</li>
+</ol>
+<h2 id='5-architecture-and-traffic-flow'>5. Architecture and traffic flow</h2>
+<p>Normal request flow:</p>
+<pre><code class="language-text">Client
+  |
+  | HTTPS :443
+  v
++--------------------------+
+| Azure Application Gateway|
++------------+-------------+
+             |
+             | Backend HTTP/HTTPS
+             v
++--------------------------+
+| Azure Load Balancer      |
++------------+-------------+
+             |
+             v
++--------------------------+
+| Application VM           |
+| Web/Application Service  |
++------------+-------------+
+             |
+             v
++--------------------------+
+| Database                 |
++--------------------------+</code></pre>
+<p>The exact production topology, ports, probe paths, certificates, and routing rules must be validated against the approved architecture.</p>
+<h2 id='6-initial-triage'>6. Initial triage</h2>
+<p>Record:</p>
+<div class='table-wrap'><table><thead><tr><th>Item</th><th>Example</th></tr></thead><tbody>
+<tr><td>Incident ID</td><td><code>INC-000123</code></td></tr>
+<tr><td>Start time</td><td><code>14:10 ET</code></td></tr>
+<tr><td>Reported symptom</td><td>Users receive HTTP 502</td></tr>
+<tr><td>Affected environment</td><td>Production</td></tr>
+<tr><td>Application URL</td><td><code>https://app.example.com</code></td></tr>
+<tr><td>Recent change</td><td>Deployment / network change / none known</td></tr>
+<tr><td>Scope</td><td>All users / subset / region</td></tr>
+<tr><td>Owner</td><td>Incident commander or support engineer</td></tr>
+</tbody></table></div>
+<p>Then determine:</p>
+<ol>
+<li>1. Is the issue reproducible?</li>
+<li>2. Is the public endpoint reachable?</li>
+<li>3. Is Application Gateway reporting healthy backends?</li>
+<li>4. Is the VM running?</li>
+<li>5. Is the application service listening on the expected port?</li>
+<li>6. Did a deployment or infrastructure change occur immediately before the incident?</li>
+</ol>
+<h2 id='7-scenario-http-502-from-application-gateway'>7. Scenario: HTTP 502 from Application Gateway</h2>
+<h3 id='symptoms'>Symptoms</h3>
+<p>Users receive:</p>
+<pre><code class="language-text">502 Bad Gateway</code></pre>
+<p>Application Gateway may report one or more backend targets as unhealthy.</p>
+<h3 id='likely-causes'>Likely causes</h3>
+<ul>
+<li>Backend VM unavailable</li>
+<li>Application service stopped</li>
+<li>Incorrect backend port</li>
+<li>Health probe path returns a non-success response</li>
+<li>Network Security Group (NSG) blocks expected traffic</li>
+<li>Load balancer/backend configuration mismatch</li>
+<li>TLS/certificate configuration problem when HTTPS is used to the backend</li>
+</ul>
+<h3 id='diagnostic-procedure'>Diagnostic procedure</h3>
+<h4 id='step-1-check-application-gateway-backend-health'>Step 1 — Check Application Gateway backend health</h4>
+<p>Open the Application Gateway resource and inspect <strong>Backend health</strong>.</p>
+<p>Record:</p>
+<ul>
+<li>Backend target</li>
+<li>Health state</li>
+<li>Reported reason</li>
+<li>Probe protocol</li>
+<li>Probe port</li>
+<li>Probe path</li>
+</ul>
+<p><strong>Expected:</strong> Required backend targets report <code>Healthy</code>.</p>
+<p>If healthy, investigate listener/routing/application-level issues before changing backend infrastructure.</p>
+<h4 id='step-2-verify-vm-state'>Step 2 — Verify VM state</h4>
+<p>Confirm the application VM is running and has not entered a failed/deallocated state unexpectedly.</p>
+<p><strong>Expected:</strong> VM state is <code>Running</code>.</p>
+<p>If the VM is unavailable, follow the organization&#x27;s approved VM recovery procedure.</p>
+<h4 id='step-3-verify-the-application-service'>Step 3 — Verify the application service</h4>
+<p>Connect using the approved administrative method and verify that the application/web service is running and listening on the configured backend port.</p>
+<p>Example Windows check:</p>
+<pre><code class="language-powershell">Get-NetTCPConnection -State Listen</code></pre>
+<p>Example Linux check:</p>
+<pre><code class="language-bash">ss -lntp</code></pre>
+<p>Do not restart the service automatically unless the restart is authorized and the impact is understood.</p>
+<h4 id='step-4-test-the-health-endpoint-locally'>Step 4 — Test the health endpoint locally</h4>
+<p>From the backend, test the configured health path.</p>
+<pre><code class="language-bash">curl -I http://localhost/health</code></pre>
+<p><strong>Expected:</strong> The endpoint returns the success status expected by the configured probe.</p>
+<p>A <code>404</code>, <code>500</code>, authentication challenge, redirect loop, or timeout can cause the backend to be marked unhealthy depending on probe configuration.</p>
+<h4 id='step-5-validate-the-health-probe'>Step 5 — Validate the health probe</h4>
+<p>Compare the approved design with the active probe:</p>
+<ul>
+<li>Protocol</li>
+<li>Host</li>
+<li>Port</li>
+<li>Path</li>
+<li>Timeout</li>
+<li>Interval</li>
+<li>Unhealthy threshold</li>
+</ul>
+<p>Do not change a probe merely to force a <code>Healthy</code> status. Confirm that the probe tests a meaningful application condition.</p>
+<h4 id='step-6-validate-network-rules'>Step 6 — Validate network rules</h4>
+<p>Verify that NSG and routing rules allow the intended traffic path between the relevant components.</p>
+<p>Check for:</p>
+<ul>
+<li>Recently changed NSG rules</li>
+<li>Incorrect source/destination</li>
+<li>Incorrect port</li>
+<li>Route-table changes</li>
+<li>Firewall policy changes</li>
+</ul>
+<p>Do <strong>not</strong> create broad <code>Any/Any</code> allow rules as a troubleshooting shortcut.</p>
+<h4 id='step-7-validate-load-balancer-health'>Step 7 — Validate load balancer health</h4>
+<p>If Application Gateway routes through a load balancer in the approved architecture, verify:</p>
+<ul>
+<li>Backend pool membership</li>
+<li>Health probe configuration</li>
+<li>Load-balancing rule</li>
+<li>Frontend/backend ports</li>
+<li>VM/NIC association</li>
+</ul>
+<h4 id='step-8-retest'>Step 8 — Retest</h4>
+<p>After an approved corrective action:</p>
+<ol>
+<li>1. Recheck backend health.</li>
+<li>2. Test the public endpoint.</li>
+<li>3. Validate a representative application transaction.</li>
+<li>4. Review monitoring for continued failures.</li>
+</ol>
+<h3 id='success-criteria'>Success criteria</h3>
+<p>Recovery is complete when:</p>
+<ul>
+<li>Required backend targets report healthy.</li>
+<li>Public endpoint responds successfully.</li>
+<li>Representative user workflow succeeds.</li>
+<li>Error rate returns to normal.</li>
+<li>No new infrastructure/security alerts indicate a related problem.</li>
+</ul>
+<h2 id='8-recovery-actions'>8. Recovery actions</h2>
+<p>Use only the action that addresses the validated cause.</p>
+<h3 id='application-service-stopped'>Application service stopped</h3>
+<ol>
+<li>1. Capture service state and relevant logs.</li>
+<li>2. Confirm restart authorization.</li>
+<li>3. Start/restart the affected service using the approved platform procedure.</li>
+<li>4. Verify the listening port.</li>
+<li>5. Verify the health endpoint.</li>
+<li>6. Recheck Application Gateway backend health.</li>
+<li>7. Validate the public application.</li>
+</ol>
+<h3 id='incorrect-probe-configuration'>Incorrect probe configuration</h3>
+<ol>
+<li>1. Compare active settings with the approved configuration.</li>
+<li>2. Capture current settings.</li>
+<li>3. Correct only the identified mismatch through the organization&#x27;s approved change mechanism.</li>
+<li>4. Verify backend health.</li>
+<li>5. Record the change in the incident/change record.</li>
+</ol>
+<h3 id='blocking-network-rule'>Blocking network rule</h3>
+<ol>
+<li>1. Identify the specific rule causing the block.</li>
+<li>2. Validate the required source, destination, protocol, and port.</li>
+<li>3. Use the organization&#x27;s approved network-change process.</li>
+<li>4. Apply the narrowest permitted correction.</li>
+<li>5. Retest connectivity.</li>
+<li>6. Confirm no unintended exposure was introduced.</li>
+</ol>
+<h2 id='9-rollback'>9. Rollback</h2>
+<p>Rollback is required when an approved recovery change:</p>
+<ul>
+<li>Does not resolve the incident,</li>
+<li>Introduces a new failure,</li>
+<li>Creates unacceptable security exposure, or</li>
+<li>Produces unexpected application behavior.</li>
+</ul>
+<p>General rollback procedure:</p>
+<ol>
+<li>1. Stop further changes.</li>
+<li>2. Restore the captured previous configuration using the approved deployment/change method.</li>
+<li>3. Verify the rollback completed.</li>
+<li>4. Recheck service health.</li>
+<li>5. Record the outcome.</li>
+<li>6. Escalate with collected evidence.</li>
+</ol>
+<h2 id='10-escalation-matrix'>10. Escalation matrix</h2>
+<div class='table-wrap'><table><thead><tr><th>Condition</th><th>Escalate to</th><th>Evidence</th></tr></thead><tbody>
+<tr><td>Application service repeatedly stops</td><td>Application/DevOps team</td><td>Service logs, timestamps, deployment ID</td></tr>
+<tr><td>Backend cannot be reached</td><td>Network/Cloud team</td><td>Probe status, NSG/routing observations</td></tr>
+<tr><td>Certificate/TLS failure</td><td>Security/Platform team</td><td>Error, certificate metadata, affected hostname</td></tr>
+<tr><td>VM instability</td><td>Cloud/Infrastructure team</td><td>VM health, platform events, monitoring</td></tr>
+<tr><td>Database dependency failure</td><td>Database team</td><td>Connection error and timestamp; no secrets</td></tr>
+<tr><td>Multiple components affected</td><td>Incident management</td><td>Timeline, impact, changes, owners</td></tr>
+</tbody></table></div>
+<h2 id='11-evidence-collection'>11. Evidence collection</h2>
+<p>Attach or record:</p>
+<ul>
+<li>Incident timeline</li>
+<li>Monitoring screenshots or exported evidence as permitted</li>
+<li>Application Gateway backend-health result</li>
+<li>Relevant application/service logs</li>
+<li>VM health</li>
+<li>Recent deployment/change IDs</li>
+<li>Network/probe configuration observations</li>
+<li>Corrective action</li>
+<li>Validation result</li>
+</ul>
+<p>Redact credentials and sensitive data.</p>
+<h2 id='12-post-incident-activities'>12. Post-incident activities</h2>
+<p>After service restoration:</p>
+<ol>
+<li>1. Confirm monitoring remains stable for the agreed observation period.</li>
+<li>2. Update the incident record.</li>
+<li>3. Document the root cause when established.</li>
+<li>4. Identify corrective/preventive actions.</li>
+<li>5. Update this runbook if the incident exposed a documentation gap.</li>
+<li>6. Link the final post-incident review according to organizational policy.</li>
+</ol>
+<h2 id='13-change-history'>13. Change history</h2>
+<div class='table-wrap'><table><thead><tr><th>Version</th><th>Date</th><th>Author</th><th>Change</th></tr></thead><tbody>
+<tr><td>1.0</td><td>2026-08-28</td><td>Priyadarshini Santhosh</td><td>Initial portfolio simulation</td></tr>
+</tbody></table></div>
+<h2 id='documentation-decisions-demonstrated'>Documentation decisions demonstrated</h2>
+<p>This sample demonstrates operational safety, audience/scope definition, infrastructure traffic-flow documentation, symptom-to-cause troubleshooting, expected results, validation, rollback, escalation, evidence collection, security-aware procedures, and lifecycle maintenance.</p></article></main><footer><div class="container footer-flex"><div><strong>Priyadarshini Santhosh</strong><br>Senior Technical Writer</div><div>Infrastructure • Cloud • APIs • Knowledge Management</div></div></footer></body></html>

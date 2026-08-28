@@ -1,0 +1,33 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>The Runbook Test: Could Someone Use It at 2 A.M.? | Priyadarshini Santhosh</title><link rel="stylesheet" href="styles.css"></head><body><header class="topbar"><div class="container nav"><a class="brand" href="index.html">PRIYADARSHINI SANTHOSH</a><nav class="links"><a href="index.html#portfolio">Portfolio</a><a href="api-guide.html">API Docs</a><a href="runbook.html">Runbooks</a><a href="index.html#expertise">Expertise</a><a href="articles.html">Articles</a><a href="index.html#about">About</a><a href="index.html#contact">Contact</a></nav></div></header><main class="container" style="padding:52px 0"><article class="doc article-body"><a class="back" href="articles.html">← Articles</a><div class="article-meta">Infrastructure • Runbooks • IT Operations</div><h1>The Runbook Test: Could Someone Use It at 2 A.M.?</h1><p>A runbook can look excellent during a documentation review and still fail during an incident.</p>
+<p>The real test is different:</p>
+<p><strong>Could an engineer who did not write this procedure use it under pressure?</strong></p>
+<h2>Incidents change how people read</h2>
+<p>During an outage, readers scan.</p>
+<p>They want to know the impact, where to look first, what evidence to collect, which action is safe, what success looks like, when to stop, and whom to contact.</p>
+<p>Long explanatory paragraphs may be useful background, but they should not hide the operational path.</p>
+<h2>Start with observable symptoms</h2>
+<p>Operational documentation works best when it begins from what the engineer can see.</p>
+<p>For an HTTP 502 incident, useful symptoms might include an unhealthy Application Gateway backend, a failed health probe, a stopped application service, or a backend that cannot be reached.</p>
+<p>From there, the procedure can move from observation to validation to corrective action.</p>
+<h2>Every risky action needs boundaries</h2>
+<p>“Restart the service” is not enough.</p>
+<p>A production runbook should establish whether the restart is authorized, what evidence should be captured first, how to verify the restart, and what to do if the service fails again.</p>
+<p>Similarly, “open the firewall port” is dangerous advice without a validated source, destination, protocol, port, approval path, and rollback plan.</p>
+<p>Operational documentation must optimize for restoration <strong>and</strong> control.</p>
+<h2>Expected results reduce ambiguity</h2>
+<p>After an important step, tell the reader what success looks like.</p>
+<p>For example:</p>
+<p><strong>Action:</strong> Test the health endpoint from the backend.</p>
+<p><strong>Expected result:</strong> The endpoint returns the status expected by the configured health probe.</p>
+<p>Now the reader knows whether to continue down the current path or investigate something else.</p>
+<h2>Rollback belongs in the procedure</h2>
+<p>A runbook is incomplete if it explains how to change production but not how to recover from the change.</p>
+<p>Rollback criteria should be explicit: the change did not resolve the issue, introduced another failure, caused unexpected behavior, or created unacceptable exposure.</p>
+<h2>Capture evidence while it exists</h2>
+<p>Incident evidence disappears quickly.</p>
+<p>A useful runbook prompts the operator to capture timestamps, backend health, relevant logs, recent change IDs, configuration observations, and validation results while avoiding secrets and sensitive data.</p>
+<p>That information supports escalation and post-incident analysis.</p>
+<h2>Write for the person holding the pager</h2>
+<p>A runbook is not a design document.</p>
+<p>It is an operational decision aid.</p>
+<p>If a reader can quickly determine what is happening, what to check, what is safe to change, how to verify recovery, and when to escalate, the runbook is doing its job.</p></article></main></body></html>

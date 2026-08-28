@@ -1,0 +1,37 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Why Great Documentation Starts With Context, Not Grammar | Priyadarshini Santhosh</title><link rel="stylesheet" href="styles.css"></head><body><header class="topbar"><div class="container nav"><a class="brand" href="index.html">PRIYADARSHINI SANTHOSH</a><nav class="links"><a href="index.html#portfolio">Portfolio</a><a href="api-guide.html">API Docs</a><a href="runbook.html">Runbooks</a><a href="index.html#expertise">Expertise</a><a href="articles.html">Articles</a><a href="index.html#about">About</a><a href="index.html#contact">Contact</a></nav></div></header><main class="container" style="padding:52px 0"><article class="doc article-body"><a class="back" href="articles.html">← Articles</a><div class="article-meta">Technical Writing • Documentation Strategy</div><h1>Why Great Documentation Starts With Context, Not Grammar</h1><p>Most documentation problems are diagnosed too late.</p>
+<p>A guide is confusing, so someone edits the sentences. An API reference feels incomplete, so the team cleans up the descriptions. A runbook fails during an incident, so the writer adds more steps.</p>
+<p>Grammar matters. But many documentation failures begin before the first sentence is written: the writer does not have enough context.</p>
+<h2>What context starvation looks like</h2>
+<p>Imagine receiving a ticket that says, “Document the new archive API.” Attached is an OpenAPI file and a link to a code change.</p>
+<p>You can describe the endpoint. You can list its parameters. You can reproduce the response schema.</p>
+<p>But several important questions remain unanswered:</p>
+<ul>
+<li>Who calls this API?</li>
+<li>What problem are they trying to solve?</li>
+<li>When should they use this operation instead of another one?</li>
+<li>What permissions are required?</li>
+<li>What happens after the API returns <code>202 Accepted</code>?</li>
+<li>What can fail?</li>
+<li>What should the user do when it fails?</li>
+</ul>
+<p>Without those answers, technically correct documentation can still be practically unusable.</p>
+<h2>Document intent, not only implementation</h2>
+<p>A parameter definition answers “what.”</p>
+<p>Strong documentation also answers “why,” “when,” and “what next.”</p>
+<p>For example, compare these approaches:</p>
+<p><strong>Implementation-focused:</strong> <code>retention_period</code> — Integer. Number of days to retain the archive.</p>
+<p><strong>User-focused:</strong> <code>retention_period</code> — Number of days the archived records must remain available before becoming eligible for deletion. Choose a value that satisfies your organization&#x27;s applicable retention policy.</p>
+<p>The second description gives the field a place in the user&#x27;s workflow.</p>
+<h2>SME interviews are part of the writing process</h2>
+<p>Technical writers should not be passive recipients of engineering artifacts.</p>
+<p>A productive SME conversation asks about the system from several perspectives: user goal, prerequisites, normal flow, exceptions, dependencies, operational impact, security considerations, and recovery.</p>
+<p>The objective is not to ask an engineer to dictate the documentation. It is to uncover the engineering reality that the documentation must represent.</p>
+<h2>Context changes the structure</h2>
+<p>Once the writer understands the workflow, information architecture becomes easier.</p>
+<p>An API may need a quickstart before its reference. A deployment guide may need prerequisites before commands. A recovery procedure may need safety checks and rollback before troubleshooting steps.</p>
+<p>Good structure is therefore not decoration. It is evidence that the writer understands how readers use the system.</p>
+<h2>The takeaway</h2>
+<p>Editing improves sentences. Context improves documentation.</p>
+<p>Before asking, “How should I word this?” I start with a more important question:</p>
+<p><strong>What does the reader need to accomplish, and what must they understand to accomplish it safely?</strong></p>
+<p>That question changes the document from a description of software into a tool for getting work done.</p></article></main></body></html>

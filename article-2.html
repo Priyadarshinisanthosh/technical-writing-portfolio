@@ -1,0 +1,43 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>An API Reference Is Not a Developer Guide | Priyadarshini Santhosh</title><link rel="stylesheet" href="styles.css"></head><body><header class="topbar"><div class="container nav"><a class="brand" href="index.html">PRIYADARSHINI SANTHOSH</a><nav class="links"><a href="index.html#portfolio">Portfolio</a><a href="api-guide.html">API Docs</a><a href="runbook.html">Runbooks</a><a href="index.html#expertise">Expertise</a><a href="articles.html">Articles</a><a href="index.html#about">About</a><a href="index.html#contact">Contact</a></nav></div></header><main class="container" style="padding:52px 0"><article class="doc article-body"><a class="back" href="articles.html">← Articles</a><div class="article-meta">API Documentation • Developer Experience</div><h1>An API Reference Is Not a Developer Guide</h1><p>An OpenAPI specification can tell developers that an endpoint exists. It cannot, by itself, guarantee that they know how to use the product successfully.</p>
+<p>This distinction is important because teams sometimes treat generated API reference as the entire developer experience.</p>
+<h2>Reference answers one kind of question</h2>
+<p>Reference documentation is excellent for precise lookup:</p>
+<ul>
+<li>What is the endpoint?</li>
+<li>Which HTTP method does it use?</li>
+<li>Which fields are required?</li>
+<li>What does the response schema contain?</li>
+<li>Which status codes can be returned?</li>
+</ul>
+<p>Developers also arrive with task-oriented questions:</p>
+<p>“How do I authenticate?”  </p>
+<p>“How do I create my first successful request?”  </p>
+<p>“Why did I receive a 403?”  </p>
+<p>“The API returned 202. What happens now?”  </p>
+<p>“How should I retry a 429?”</p>
+<p>Those questions require more than a schema.</p>
+<h2>Build documentation in layers</h2>
+<p>A useful API documentation set usually has several layers.</p>
+<p>The <strong>overview</strong> explains the product and core concepts. The <strong>quickstart</strong> gets a developer to the first successful call quickly. <strong>Authentication</strong> explains credentials, scopes, environments, and safe handling. The <strong>API reference</strong> provides endpoint-level precision. <strong>Errors and troubleshooting</strong> explain recovery. <strong>Guides</strong> connect multiple endpoints into real workflows.</p>
+<p>These layers serve different reading modes.</p>
+<h2>Document asynchronous behavior explicitly</h2>
+<p>Consider an archive operation that returns <code>202 Accepted</code>.</p>
+<p>A developer needs to know that acceptance does not mean completion. The guide should explain how to obtain the job identifier, how to check status, which states are possible, how long the operation may take if an authoritative expectation exists, and what to do when processing fails.</p>
+<p>That context is often more valuable than repeating the response schema.</p>
+<h2>Examples should teach</h2>
+<p>A good code sample is not merely syntactically valid. It demonstrates the recommended path.</p>
+<p>Examples should use realistic field names, show required headers, avoid exposing credentials, handle relevant errors, and match the surrounding explanation.</p>
+<p>The sample and prose should reinforce each other.</p>
+<h2>Error documentation is product documentation</h2>
+<p>Errors are part of the interface.</p>
+<p>Instead of listing <code>400</code>, <code>401</code>, <code>403</code>, and <code>429</code>, explain the difference between them and give the developer a useful next action.</p>
+<p>For example:</p>
+<ul>
+<li><code>401</code>: verify the token is present and valid.</li>
+<li><code>403</code>: verify the authenticated identity has the required permission or scope.</li>
+<li><code>429</code>: reduce request frequency and follow the service&#x27;s documented retry behavior.</li>
+</ul>
+<h2>The goal</h2>
+<p>The best API documentation does not make developers admire the documentation.</p>
+<p>It helps them stop reading it.</p>
+<p>They authenticate, make the correct call, understand the response, recover from predictable problems, and return to building their application.</p></article></main></body></html>

@@ -1,0 +1,180 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CloudVault Data Archive API | Priyadarshini Santhosh</title><link rel="stylesheet" href="styles.css"></head><body><header class="topbar"><div class="container nav">
+<a class="brand" href="index.html">PRIYADARSHINI SANTHOSH</a>
+<nav class="links"><a href="index.html#portfolio">Portfolio</a><a href="api-guide.html">API Docs</a><a href="runbook.html">Runbooks</a><a href="index.html#expertise">Expertise</a><a href="articles.html">Articles</a><a href="index.html#about">About</a><a href="index.html#contact">Contact</a></nav>
+</div></header><main class="container doc-layout"><aside class="sidebar"><strong>On this page</strong><a href='#overview'>Overview</a><a href='#quickstart'>Quickstart</a><a href='#authentication'>Authentication</a><a href='#core-concepts'>Core concepts</a><a href='#api-reference'>API reference</a><a href='#error-handling'>Error handling</a><a href='#pagination'>Pagination</a><a href='#rate-limits'>Rate limits</a><a href='#troubleshooting'>Troubleshooting</a><a href='#python-example'>Python example</a><a href='#documentation-decisions-demonstrated'>Documentation decisions demonstrated</a><hr><a href="index.html#portfolio">← All samples</a></aside><article class="doc"><h1 id='cloudvault-data-archive-api'>CloudVault Data Archive API</h1>
+<aside class='callout'><strong>Portfolio Simulation</strong>  </aside>
+<aside class='callout'>This documentation describes a fictional enterprise system created to demonstrate technical documentation skills. Names, endpoints, configurations, credentials, architecture, and data are illustrative and are not derived from confidential client systems.</aside>
+<h2 id='overview'>Overview</h2>
+<p>CloudVault is a fictional REST API for archiving enterprise records that are no longer required in active storage but must remain available for retention, audit, or recovery purposes.</p>
+<p><strong>Audience:</strong> Application developers, integration engineers, platform administrators  </p>
+<p><strong>API style:</strong> REST / JSON  </p>
+<p><strong>Base URL:</strong> <code>https://api.example-cloudvault.com/v1</code>  </p>
+<p><strong>Authentication:</strong> OAuth 2.0 bearer token</p>
+<h2 id='quickstart'>Quickstart</h2>
+<h3 id='1-obtain-an-access-token'>1. Obtain an access token</h3>
+<p>In production, an OAuth 2.0 identity provider would issue the token. For this sample, use a placeholder:</p>
+<pre><code class="language-text">CLOUDVAULT_TOKEN=&lt;access_token&gt;</code></pre>
+<p>Never store production credentials in source control.</p>
+<h3 id='2-create-an-archive'>2. Create an archive</h3>
+<pre><code class="language-bash">curl -X POST &quot;https://api.example-cloudvault.com/v1/archives&quot; \
+  -H &quot;Authorization: Bearer $CLOUDVAULT_TOKEN&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#x27;{
+    &quot;source&quot;: &quot;transactions&quot;,
+    &quot;retention_period&quot;: 2555,
+    &quot;retention_unit&quot;: &quot;days&quot;,
+    &quot;reason&quot;: &quot;regulatory_retention&quot;
+  }&#x27;</code></pre>
+<p>A successful request returns <code>202 Accepted</code> because archive processing occurs asynchronously.</p>
+<pre><code class="language-json">{
+  &quot;archive_id&quot;: &quot;arc_8F21A91&quot;,
+  &quot;status&quot;: &quot;queued&quot;,
+  &quot;created_at&quot;: &quot;2026-08-28T14:32:15Z&quot;
+}</code></pre>
+<h2 id='authentication'>Authentication</h2>
+<p>Include an OAuth 2.0 access token in the <code>Authorization</code> header.</p>
+<pre><code class="language-http">Authorization: Bearer &lt;access_token&gt;</code></pre>
+<p>If the token is missing, expired, or invalid, the API returns <code>401 Unauthorized</code>.</p>
+<h2 id='core-concepts'>Core concepts</h2>
+<h3 id='archive'>Archive</h3>
+<p>An archive represents data selected for movement from active storage into a retained state.</p>
+<h3 id='retention-policy'>Retention policy</h3>
+<p>A retention policy defines how long archived data must be retained before it becomes eligible for deletion.</p>
+<h3 id='restore-job'>Restore job</h3>
+<p>A restore job requests temporary recovery of archived data for an authorized business, audit, or operational purpose.</p>
+<h2 id='api-reference'>API reference</h2>
+<h3 id='create-an-archive'>Create an archive</h3>
+<p><code>POST /archives</code></p>
+<p>Creates an asynchronous archive job.</p>
+<h4 id='request-body'>Request body</h4>
+<div class='table-wrap'><table><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>source</code></td><td>string</td><td>Yes</td><td>Logical source containing the records to archive.</td></tr>
+<tr><td><code>retention_period</code></td><td>integer</td><td>Yes</td><td>Retention duration. Must be greater than zero.</td></tr>
+<tr><td><code>retention_unit</code></td><td>string</td><td>Yes</td><td>Unit for the retention period: <code>days</code>, <code>months</code>, or <code>years</code>.</td></tr>
+<tr><td><code>reason</code></td><td>string</td><td>Yes</td><td>Business or compliance reason for the archive.</td></tr>
+</tbody></table></div>
+<h4 id='example-request'>Example request</h4>
+<pre><code class="language-json">{
+  &quot;source&quot;: &quot;transactions&quot;,
+  &quot;retention_period&quot;: 2555,
+  &quot;retention_unit&quot;: &quot;days&quot;,
+  &quot;reason&quot;: &quot;regulatory_retention&quot;
+}</code></pre>
+<h4 id='response'>Response</h4>
+<p><code>202 Accepted</code></p>
+<pre><code class="language-json">{
+  &quot;archive_id&quot;: &quot;arc_8F21A91&quot;,
+  &quot;status&quot;: &quot;queued&quot;,
+  &quot;created_at&quot;: &quot;2026-08-28T14:32:15Z&quot;
+}</code></pre>
+<hr>
+<h3 id='get-archive-status'>Get archive status</h3>
+<p><code>GET /archives/{archive_id}</code></p>
+<p>Returns the current state of an archive job.</p>
+<pre><code class="language-bash">curl &quot;https://api.example-cloudvault.com/v1/archives/arc_8F21A91&quot; \
+  -H &quot;Authorization: Bearer $CLOUDVAULT_TOKEN&quot;</code></pre>
+<p><code>200 OK</code></p>
+<pre><code class="language-json">{
+  &quot;archive_id&quot;: &quot;arc_8F21A91&quot;,
+  &quot;source&quot;: &quot;transactions&quot;,
+  &quot;status&quot;: &quot;completed&quot;,
+  &quot;records_archived&quot;: 184205,
+  &quot;completed_at&quot;: &quot;2026-08-28T14:41:02Z&quot;
+}</code></pre>
+<p>Possible status values are <code>queued</code>, <code>processing</code>, <code>completed</code>, and <code>failed</code>.</p>
+<hr>
+<h3 id='list-archives'>List archives</h3>
+<p><code>GET /archives</code></p>
+<p>Returns archives visible to the authenticated client.</p>
+<p>Optional query parameters:</p>
+<div class='table-wrap'><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>status</code></td><td>Filter by archive status.</td></tr>
+<tr><td><code>limit</code></td><td>Maximum records returned. Default: 25. Maximum: 100.</td></tr>
+<tr><td><code>cursor</code></td><td>Cursor returned by the previous page.</td></tr>
+</tbody></table></div>
+<p>Example:</p>
+<pre><code class="language-http">GET /v1/archives?status=completed&amp;limit=25</code></pre>
+<hr>
+<h3 id='restore-an-archive'>Restore an archive</h3>
+<p><code>POST /archives/{archive_id}/restore</code></p>
+<p>Requests restoration of an archived dataset.</p>
+<pre><code class="language-json">{
+  &quot;reason&quot;: &quot;audit_review&quot;,
+  &quot;expires_in_hours&quot;: 24
+}</code></pre>
+<p><code>202 Accepted</code></p>
+<pre><code class="language-json">{
+  &quot;restore_id&quot;: &quot;rst_71AD22&quot;,
+  &quot;archive_id&quot;: &quot;arc_8F21A91&quot;,
+  &quot;status&quot;: &quot;queued&quot;
+}</code></pre>
+<hr>
+<h3 id='delete-an-archive'>Delete an archive</h3>
+<p><code>DELETE /archives/{archive_id}</code></p>
+<p>Deletes an archive only when applicable retention and authorization requirements have been satisfied.</p>
+<p><code>204 No Content</code></p>
+<p>A production implementation should enforce retention/legal-hold rules server-side rather than relying on the client.</p>
+<h2 id='error-handling'>Error handling</h2>
+<p>Errors use a consistent JSON structure.</p>
+<pre><code class="language-json">{
+  &quot;error&quot;: {
+    &quot;code&quot;: &quot;INVALID_REQUEST&quot;,
+    &quot;message&quot;: &quot;retention_period must be greater than zero&quot;,
+    &quot;request_id&quot;: &quot;req_091CB8&quot;
+  }
+}</code></pre>
+<div class='table-wrap'><table><thead><tr><th>HTTP</th><th>Code</th><th>Meaning</th></tr></thead><tbody>
+<tr><td>400</td><td><code>INVALID_REQUEST</code></td><td>One or more request values are invalid.</td></tr>
+<tr><td>401</td><td><code>UNAUTHORIZED</code></td><td>Authentication is missing or invalid.</td></tr>
+<tr><td>403</td><td><code>FORBIDDEN</code></td><td>The client does not have permission for the operation.</td></tr>
+<tr><td>404</td><td><code>ARCHIVE_NOT_FOUND</code></td><td>The specified archive does not exist or is not visible to the client.</td></tr>
+<tr><td>409</td><td><code>ARCHIVE_EXISTS</code></td><td>An equivalent active archive request already exists.</td></tr>
+<tr><td>429</td><td><code>RATE_LIMITED</code></td><td>The request limit has been exceeded.</td></tr>
+<tr><td>500</td><td><code>INTERNAL_ERROR</code></td><td>An unexpected server error occurred.</td></tr>
+</tbody></table></div>
+<p>When reporting an issue, record the HTTP status, error code, request ID, timestamp, and endpoint. Do not include access tokens or sensitive payload data.</p>
+<h2 id='pagination'>Pagination</h2>
+<p>List operations use cursor-based pagination.</p>
+<pre><code class="language-json">{
+  &quot;data&quot;: [
+    {
+      &quot;archive_id&quot;: &quot;arc_8F21A91&quot;,
+      &quot;status&quot;: &quot;completed&quot;
+    }
+  ],
+  &quot;next_cursor&quot;: &quot;eyJwYWdlIjoyfQ&quot;
+}</code></pre>
+<p>Pass <code>next_cursor</code> as the <code>cursor</code> query parameter to retrieve the next page.</p>
+<h2 id='rate-limits'>Rate limits</h2>
+<p>For this portfolio simulation, assume a limit of 600 requests per minute per client. A real implementation would document authoritative limits and response headers supplied by the service.</p>
+<h2 id='troubleshooting'>Troubleshooting</h2>
+<p><strong>401 Unauthorized:</strong> Confirm the token is present, has not expired, and is intended for the correct environment.</p>
+<p><strong>403 Forbidden:</strong> Confirm the client has the required scope/role for the operation.</p>
+<p><strong>404 Archive Not Found:</strong> Verify the archive ID and confirm the authenticated client has access to it.</p>
+<p><strong>429 Rate Limited:</strong> Reduce request frequency and implement exponential backoff.</p>
+<p><strong>Archive remains in <code>processing</code>:</strong> Record the archive ID and request ID, check service health/monitoring, and escalate according to the operational support process.</p>
+<h2 id='python-example'>Python example</h2>
+<pre><code class="language-python">import requests
+
+base_url = &quot;https://api.example-cloudvault.com/v1&quot;
+token = &quot;&lt;access_token&gt;&quot;
+
+response = requests.post(
+    f&quot;{base_url}/archives&quot;,
+    headers={
+        &quot;Authorization&quot;: f&quot;Bearer {token}&quot;,
+        &quot;Content-Type&quot;: &quot;application/json&quot;,
+    },
+    json={
+        &quot;source&quot;: &quot;transactions&quot;,
+        &quot;retention_period&quot;: 2555,
+        &quot;retention_unit&quot;: &quot;days&quot;,
+        &quot;reason&quot;: &quot;regulatory_retention&quot;,
+    },
+    timeout=30,
+)
+
+response.raise_for_status()
+print(response.json())</code></pre>
+<h2 id='documentation-decisions-demonstrated'>Documentation decisions demonstrated</h2>
+<p>This sample demonstrates task-oriented developer onboarding, REST endpoint documentation, OAuth-style authentication guidance, JSON examples, asynchronous operations, consistent errors, pagination, troubleshooting, and security-conscious writing.</p></article></main><footer><div class="container footer-flex"><div><strong>Priyadarshini Santhosh</strong><br>Senior Technical Writer</div><div>Infrastructure • Cloud • APIs • Knowledge Management</div></div></footer></body></html>
