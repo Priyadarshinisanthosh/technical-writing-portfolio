@@ -1,0 +1,40 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AWS Deployment Documentation Case Study | Priyadarshini Santhosh</title><link rel="stylesheet" href="styles.css"></head><body><header class="topbar"><div class="container nav"><a class="brand" href="index.html">PRIYADARSHINI SANTHOSH</a><nav class="links"><a href="index.html#case-studies">Case Studies</a><a href="index.html#writing-samples">Writing Samples</a><a href="articles.html">Articles</a><a href="index.html#contact">Contact</a></nav></div></header><main class="container doc-layout"><aside class="sidebar"><strong>Case Study</strong><a href="#challenge">Challenge</a><a href="#sme">SME Discovery</a><a href="#ia">Information Architecture</a><a href="#architecture">Architecture</a><a href="#sample">Sample Final Documentation</a><a href="#outcome">Outcome</a><hr><a href="index.html#case-studies">← All case studies</a></aside><article class="doc"><div class="eyebrow">Cloud Infrastructure • AWS • Documentation Process</div><h1>From Engineering Notes to AWS Deployment Documentation</h1><aside class="callout"><strong>Portfolio Simulation:</strong> This case study uses fictional product names, architecture, values, and examples. No confidential customer or employer information is included.</aside><h2 id="challenge">Documentation Challenge</h2><p>Engineering teams often communicate deployment requirements through architecture discussions, Terraform variables, tickets, spreadsheets, and implementation notes. A fictional starting point might look like this:</p><pre><code>Application deployed in AWS.
+Need ALB and private EC2.
+Terraform deployment.
+S3 stores exported data.
+PostgreSQL required.
+Need deployment IAM role.
+TLS required.
+Customer networking must be ready first.
+CloudWatch logs required.</code></pre><p>The information is technically useful, but it does not clearly explain what the customer must prepare, who owns each prerequisite, which requirements are mandatory, how the components communicate, or how to validate deployment readiness.</p><h2 id="sme">SME Discovery</h2><h3>Questions for the Solution Architect</h3><ul><li>What components make up the solution?</li><li>Which components are customer-managed and which are provisioned by automation?</li><li>Where does application data reside?</li><li>What are the major technical dependencies?</li><li>What differs between development and production?</li></ul><h3>Questions for Network and Security SMEs</h3><ul><li>Which components require inbound connectivity?</li><li>Which workloads must remain private?</li><li>What ports and protocols are required?</li><li>What permissions does Terraform require?</li><li>Who owns encryption keys and TLS certificates?</li><li>What administrative source ranges are permitted?</li></ul><h3>Questions for Operations</h3><ul><li>Which logs are generated and where are they stored?</li><li>Which conditions should trigger alerts?</li><li>What retention period applies to logs?</li><li>What post-deployment checks are required?</li></ul><h2 id="ia">Information Architecture</h2><p>I would reorganize the engineering input around customer tasks rather than implementation fragments.</p><pre><code>Cloud Deployment Guide
+├── Overview
+├── Architecture
+├── Deployment Responsibilities
+├── Before You Begin
+│   ├── AWS Account Requirements
+│   ├── Network Requirements
+│   ├── Security Requirements
+│   ├── Compute Requirements
+│   ├── Storage Requirements
+│   └── Database Requirements
+├── Prepare the Environment
+├── Run the Deployment
+├── Validate the Deployment
+├── Troubleshooting
+└── Reference
+    ├── Ports
+    ├── Configuration Parameters
+    └── Glossary</code></pre><h2 id="architecture">Simplified Architecture</h2><pre><code>                    Users
+                      |
+                   HTTPS/443
+                      |
+             Application Load
+                 Balancer
+                      |
+              Private Subnet
+                      |
+              Application Tier
+              /      |       \
+             /       |        \
+       PostgreSQL    S3      CloudWatch
+       Metadata DB  Storage     Logs</code></pre><p>The goal of this diagram is not to show every AWS service. It is to communicate the primary traffic path, trust boundary, data dependencies, and operational services.</p><h2 id="sample">Sample Final Documentation</h2><h3>Before You Begin</h3><p>Complete the following prerequisites before starting the deployment.</p><h3>AWS Account</h3><ul><li>Confirm the target AWS account is available.</li><li>Confirm the deployment region has been approved.</li><li>Verify required service quotas are sufficient.</li><li>Confirm the Terraform execution role is available.</li></ul><h3>Network</h3><p>Provide the VPC ID, private subnet IDs, Availability Zones, approved administrative CIDR ranges, and required routing information. Application workloads should remain in private subnets unless the approved design explicitly requires a public endpoint.</p><h3>Security</h3><ul><li>Create or approve the Terraform execution role.</li><li>Confirm the encryption-key strategy.</li><li>Obtain the TLS certificate.</li><li>Approve required security-group rules.</li><li>Confirm administrative access ranges.</li></ul><h3>Deployment Readiness</h3><div class="table-wrap"><table><thead><tr><th>Area</th><th>Requirement</th><th>Status</th></tr></thead><tbody><tr><td>AWS</td><td>Target account and region approved</td><td>☐</td></tr><tr><td>Network</td><td>VPC and subnets available</td><td>☐</td></tr><tr><td>IAM</td><td>Terraform role available</td><td>☐</td></tr><tr><td>Security</td><td>TLS and encryption strategy approved</td><td>☐</td></tr><tr><td>Storage</td><td>Object storage ready</td><td>☐</td></tr><tr><td>Database</td><td>PostgreSQL strategy confirmed</td><td>☐</td></tr><tr><td>Operations</td><td>Logging and alerts configured</td><td>☐</td></tr></tbody></table></div><h3>Post-Deployment Validation</h3><ol><li>Verify the application endpoint responds over HTTPS.</li><li>Confirm application services are healthy.</li><li>Verify database connectivity.</li><li>Confirm the application can access object storage.</li><li>Confirm logs are reaching the monitoring platform.</li><li>Run a representative application workflow.</li><li>Review monitoring for unexpected errors.</li></ol><h2 id="outcome">Documentation Outcome</h2><p>The final guide transforms fragmented engineering information into role-specific prerequisites, a deployment sequence, architecture context, security requirements, readiness criteria, and validation steps. This gives multiple teams a shared, repeatable deployment process.</p></article></main><footer><div class="container footer-flex"><div><strong>Priyadarshini Santhosh</strong><br>Senior Technical Writer</div><div>Infrastructure • Cloud • APIs • Knowledge Management</div></div></footer></body></html>
