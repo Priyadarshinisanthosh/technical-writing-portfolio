@@ -1,0 +1,39 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Content Strategy Case Study | Priyadarshini Santhosh</title><link rel="stylesheet" href="styles.css"></head><body><header class="topbar"><div class="container nav"><a class="brand" href="index.html">PRIYADARSHINI SANTHOSH</a><nav class="links"><a href="index.html#content-strategy">Content Strategy</a><a href="index.html#case-studies">Case Studies</a><a href="articles.html">Articles</a><a href="index.html#contact">Contact</a></nav></div></header><main class="container doc-layout"><aside class="sidebar"><strong>AI Content Strategy</strong><a href="#problem">Problem</a><a href="#principles">Principles</a><a href="#instructions">System Instructions</a><a href="#golden">Golden Data</a><a href="#rubric">Evaluation Rubric</a><a href="#governance">Governance</a><hr><a href="index.html#content-strategy">← Content strategy samples</a></aside><article class="doc"><div class="eyebrow">AI Content Strategy • Golden Data • System Instructions</div><h1>Shaping Reliable AI Help Content Through Content Strategy</h1><aside class="callout"><strong>Portfolio Simulation:</strong> This case study demonstrates content judgment for AI systems. The examples, product behavior, evaluation data, and instructions are fictional and do not represent a production model.</aside><h2 id="problem">Scenario</h2><p>An enterprise product introduces an AI assistant that answers questions about product configuration and troubleshooting. Early responses are technically plausible but inconsistent: some are too verbose, some invent unavailable actions, some skip prerequisites, and terminology varies between answers.</p><p>The content-strategy problem is not simply “write better prompts.” It requires defining what a good answer looks like, curating representative examples, creating system-level instructions, establishing failure boundaries, and evaluating outputs consistently.</p><h2 id="principles">Content Principles for Model Output</h2><ul><li><strong>Grounded:</strong> Answer only from approved product knowledge when the question depends on product behavior.</li><li><strong>Task-oriented:</strong> Lead with the action or answer users need.</li><li><strong>Terminology-consistent:</strong> Use approved UI labels and product terms.</li><li><strong>Transparent:</strong> Do not invent features, permissions, settings, or outcomes.</li><li><strong>Context-aware:</strong> State prerequisites when they materially affect the task.</li><li><strong>Recoverable:</strong> For errors, explain what happened, what the user can check, and when to escalate.</li></ul><h2 id="instructions">Sample System-Instruction Strategy</h2><p>Rather than relying on a long list of disconnected rules, I would organize instructions by priority and decision type.</p><pre><code>ROLE
+You are the in-product help assistant for Nimbus Workspace.
+
+SOURCE OF TRUTH
+Use only the approved product knowledge supplied in context for
+product-specific behavior. If the source does not establish an answer,
+say that you do not have enough verified information.
+
+RESPONSE STRATEGY
+1. Answer the user's task directly.
+2. Use current Product UI labels exactly as supplied.
+3. Include prerequisites only when they affect success.
+4. Use numbered steps for procedures.
+5. Explain expected results after high-impact actions.
+6. Do not invent menu paths, permissions, limits, or product behavior.
+
+ERRORS
+When troubleshooting, separate:
+- observed symptom,
+- likely cause supported by the source,
+- user-verifiable checks,
+- recovery action,
+- escalation information.
+
+STYLE
+Use concise, neutral language. Prefer user goals over internal
+implementation terminology.</code></pre><h2 id="golden">Golden Data Curation</h2><p>Golden examples should cover the decisions the model needs to learn—not just easy “happy path” questions.</p><div class="table-wrap"><table><thead><tr><th>Example category</th><th>User request</th><th>Desired behavior</th></tr></thead><tbody><tr><td>Direct task</td><td>How do I create an alert?</td><td>Give concise steps using exact UI terminology.</td></tr><tr><td>Missing prerequisite</td><td>Why can't I add this recipient?</td><td>Explain the supported access prerequisite before suggesting recovery.</td></tr><tr><td>Ambiguous request</td><td>My job failed. Fix it.</td><td>Ask for or guide the user to the minimum diagnostic information.</td></tr><tr><td>Unsupported capability</td><td>Can the product automatically delete every failed job?</td><td>Do not infer a feature that is absent from approved knowledge.</td></tr><tr><td>Terminology test</td><td>Where is Notification Target?</td><td>Map legacy terminology to the current approved label only when the source supports the mapping.</td></tr><tr><td>High-impact action</td><td>How do I delete this configuration?</td><td>State impact and expected result before/after the destructive step.</td></tr></tbody></table></div><h3>Example Golden Response</h3><p><strong>User:</strong> Why can't I add a teammate to an alert?</p><blockquote>Make sure the teammate has access to the workspace first. In <strong>Who should be notified?</strong>, you can select only people or groups that have workspace access. After access is granted, return to the alert and add the recipient again.</blockquote><p><strong>Why this is golden:</strong> It answers the likely task, uses the approved UI label, states the prerequisite, gives a recovery path, and avoids unsupported speculation.</p><h2 id="rubric">Output Evaluation Rubric</h2><div class="table-wrap"><table><thead><tr><th>Dimension</th><th>Pass criteria</th></tr></thead><tbody><tr><td>Factual grounding</td><td>Every product-specific claim is supported by approved knowledge.</td></tr><tr><td>Task completion</td><td>The response gives enough information to complete or advance the task.</td></tr><tr><td>Terminology</td><td>UI labels and product terms match the approved vocabulary.</td></tr><tr><td>Instruction following</td><td>The response follows required boundaries and format.</td></tr><tr><td>Clarity</td><td>The answer is concise, scannable, and appropriate for the user.</td></tr><tr><td>Safety of action</td><td>High-impact actions include necessary context, confirmation, or recovery guidance.</td></tr></tbody></table></div><h2 id="governance">Content Governance</h2><p>I would treat golden data and system instructions as governed product content. Each item should have an owner, source reference, review status, last-reviewed date, and reason for change. Evaluation failures should feed back into one of four areas: source content, system instructions, golden examples, or product UX.</p><pre><code>Product change / user feedback
+          ↓
+Content gap identified
+          ↓
+Source-of-truth update
+          ↓
+System instruction or golden-data review
+          ↓
+Evaluation set
+          ↓
+Human content review
+          ↓
+Publish / monitor / iterate</code></pre><h2>Outcome</h2><p>This approach applies traditional content-strategy strengths—audience understanding, terminology governance, information architecture, editorial judgment, and quality criteria—to AI output. The goal is not merely fluent model responses; it is reliable, consistent, useful product communication.</p></article></main><footer><div class="container footer-flex"><div><strong>Priyadarshini Santhosh</strong><br>Senior Technical Writer</div><div>Content Strategy • UX Writing • AI Content • Enterprise Documentation</div></div></footer></body></html>
