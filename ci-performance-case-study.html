@@ -5,7 +5,7 @@
       - uses: actions/cache@v4
         with:
           path: ~/.cache/build
-          key: build-{{ runner.os }}-{{ hashFiles('**/lockfile') }}
+          key: build-&#36;{{ runner.os }}-&#36;{{ hashFiles('**/lockfile') }}
 
   integration:
     needs: build
